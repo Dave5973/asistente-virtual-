@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Asistente Virtual de Tareas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f9fc;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      background: #fff;
+      padding: 20px;
+      margin: auto;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .task {
+      border-left: 5px solid #2ecc71;
+      background: #ecf9f1;
+      padding: 10px;
+      margin-top: 10px;
+      position: relative;
+    }
+    .delete-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #e74c3c;
+      border: none;
+      color: white;
+      font-size: 14px;
+      padding: 4px 8px;
+      border-radius: 50%;
+      cursor: pointer;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📋 Asistente Virtual de Tareas</h1>
+    <form id="taskForm">
+      <input type="text" id="taskTitle" placeholder="Título de la tarea" required>
+      <textarea id="taskDesc" placeholder="Descripción de la tarea" required></textarea>
+      <input type="datetime-local" id="taskDate" required>
+      <button type="submit">Agregar Tarea</button>
+    </form>
+    <div id="taskList"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('taskForm');
+    const taskList = document.getElementById('taskList');
+
+    if (Notification.permission !== "granted") {
+      Notification.requestPermission();
+    }
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const title = document.getElementById('taskTitle').value;
+      const desc = document.getElementById('taskDesc').value;
+      const date = new Date(document.getElementById('taskDate').value);
+      const now = new Date();
+      const delay = date.getTime() - now.getTime();
+
+      // Crear elemento de tarea
+      const taskEl = document.createElement('div');
+      taskEl.classList.add('task');
+
+      taskEl.innerHTML = `
+        <h3>${title}</h3>
+        <p>${desc}</p>
+        <p><strong>Fecha:</strong> ${date.toLocaleString()}</p>
+        <button class="delete-btn" title="Eliminar tarea">✖</button>
+      `;
+
+      // Botón eliminar
+      taskEl.querySelector('.delete-btn').addEventListener('click', () => {
+        taskList.removeChild(taskEl);
+      });
+
+      taskList.appendChild(taskEl);
+
+      // Notificación programada
+      if (delay > 0) {
+        setTimeout(() => {
+          if (Notification.permission === "granted") {
+            new Notification("🔔 Recordatorio de Tarea", {
+              body: `${title}: ${desc}`,
+              icon: "https://cdn-icons-png.flaticon.com/512/3176/3176360.png"
+            });
+          } else {
+            alert(`Recordatorio: ${title} - ${desc}`);
+          }
+        }, delay);
+      }
+
+      form.reset();
+    });
+  </script>
+</body>
+</html>
